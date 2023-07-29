@@ -1,5 +1,5 @@
 // import { isEqual, uniqWith } from 'lodash'
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useState, useContext } from "react";
 import { Table, Input, Modal, Row, Col, message, Skeleton } from "antd";
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { Section } from "components/ui/templates/Section";
@@ -8,9 +8,14 @@ import { H1, H2, H3 } from "components/ui/templates/headings";
 import { Subtitle } from "components/ui/templates/Subtitle";
 import { Paragraph } from "components/ui/templates/Paragraph";
 import Link from 'next/link';
+import { AiOutlineClose } from "react-icons/ai";
+import axios from "axios";
+import { AuthContext } from "./_app";
 
 const Dashboard = () => {
     const [products, setProduct] = useState([])
+    const [viewAddProduct, setViewAddProduct] = useState(false)
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productName, setProductName] = useState("");
     const [brandName, setBrandName] = useState("");
@@ -22,39 +27,39 @@ const Dashboard = () => {
     const { Search } = Input;
     const { TextArea } = Input;
 
+    const { token, dispatch } = useContext(AuthContext)
+
     useEffect(() => {
-        fetchProduct()
+        getProduct()
     }, []);
-    const fetchProduct = () => {
-        fetch("https://dummyjson.com/products/")
-            .then(response => {
-                return response.json()
-            })
-            .then(data => {
-                console.log(data);
-                setProduct(data.products)
+
+    const getProduct = () => {
+        axios.get('https://belaundry-api.sebaris.link/platform/product', {
+            headers: { token: `${token}` }
+        })
+            .then((res) => {
+                console.log("product all", res);
                 setLoading(false)
+                setProduct(res.data.response)
             })
-            .catch(err => {
-                console.log(err);
-            })
-    }
+            .catch((error) => {
+                console.error(error);
+            });
+    };
 
     // Set for data table
     interface DataType {
-        key: string;
-        title: string;
-        brand: string;
+        name: string;
+        sku: string;
         price: number;
         stock: number;
-        category: number;
+        category: string;
     }
 
     interface Item {
         title?: string,
         brand?: string,
         category?: string,
-
     }
 
     //   const titles = products.map((item: Item) => ({
@@ -77,17 +82,32 @@ const Dashboard = () => {
     //   }));
     //   const category: any = uniqWith(categorys, isEqual)
 
+    const categoryById = (id: string) => {
+        console.log("lili", id);
+        switch (id) {
+            case "1":
+                return "Wash and Fold"
+            case "2":
+                return "Dry Clean"
+            case "3":
+                return "Home"
+            case "4":
+                return "Other"
+            case "5":
+                return "Other"
+        }
+    }
     const columns: ColumnsType<DataType> = [
         {
             title: 'Product Name',
-            dataIndex: 'title',
-            key: 'title',
+            dataIndex: 'name',
+            key: 'name',
             //   filters: title,
             onFilter: (value: string | number | boolean, record: any) => record.title.indexOf(value) === 0,
         },
         {
-            title: 'Brand',
-            dataIndex: 'brand',
+            title: 'Sku',
+            dataIndex: 'sku',
             key: 'brand',
             //   filters: brand,
             onFilter: (value: string | number | boolean, record: any) => record.brand.indexOf(value) === 0,
@@ -104,10 +124,11 @@ const Dashboard = () => {
         },
         {
             title: 'Category',
-            dataIndex: 'category',
+            dataIndex: 'category_id',
             key: 'category',
             //   filters: category,
-            onFilter: (value: string | number | boolean, record: any) => record.category.indexOf(value) === 0,
+            render: (text) => <a>{categoryById(text)}</a>,
+            // onFilter: (value: string | number | boolean, record: any) => record.category.indexOf(value) === 0,
         },
         {
             title: 'Action',
@@ -115,7 +136,6 @@ const Dashboard = () => {
             key: 'action',
         },
     ];
-
     const data: DataType[] = products
     const onChange: TableProps<DataType>['onChange'] = (
         pagination,
@@ -138,6 +158,7 @@ const Dashboard = () => {
                 setProduct(data.products)
             })
     }
+
     // Add Function
     const showModal = () => {
         setIsModalOpen(true);
@@ -148,7 +169,6 @@ const Dashboard = () => {
     const handleCancel = () => {
         setIsModalOpen(false);
     };
-
     const changeProduct = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setProductName(e.target.value);
     };
@@ -164,7 +184,6 @@ const Dashboard = () => {
     const changeStock = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setStock(e.target.value);
     };
-
     const success = () => {
         messageApi.open({
             type: 'success',
@@ -203,15 +222,25 @@ const Dashboard = () => {
             })
     }
 
+    // Set view page
+    const showAddProduct = () => {
+        setViewAddProduct(true)
+    }
+    const showProduct = () => {
+        setViewAddProduct(false)
+    }
     const CreateProduct = () => {
         return (
             <div className="grid grid-cols-1 bg-white shadow-sm rounded-xl mt-9 px-6 py-5">
                 <Skeleton loading={loading}>
                     <main>
-                        <div className="px-4 mb-6">
+                        <div className="px-4 mb-6 flex justify-between">
                             <H3 className="text-sky-600">
                                 Add New Product
                             </H3>
+                            <div>
+                                <AiOutlineClose onClick={showProduct} className="text-sky-600 text-2xl cursor-pointer" />
+                            </div>
                         </div>
                         <div className="px-4">
                             <div className="flex flex-col md:flex-row">
@@ -269,12 +298,9 @@ const Dashboard = () => {
             </div>
         )
     }
-
-    return (
-        <Fragment>
-            {contextHolder}
-            <CreateProduct />
-            {/* <div className="grid grid-cols-1 bg-white shadow-sm rounded-xl mt-9 px-6 py-5">
+    const ListProduct = () => {
+        return (
+            <div className="grid grid-cols-1 bg-white shadow-sm rounded-xl mt-9 px-6 py-5">
                 <Skeleton loading={loading}>
                     <main>
                         <Section>
@@ -297,7 +323,7 @@ const Dashboard = () => {
                         <div className="px-4">
                             <div className="flex justify-between mb-2">
                                 <H3 className="text-sky-600">Product</H3>
-                                <button onClick={showModal} type="button" className="focus:outline-none text-white bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:ring-sky-300 font-medium rounded-lg text-sm px-3 py-1 mb-2 dark:bg-sky-600 dark:hover:bg-sky-700 dark:focus:ring-sky-900">Add Product</button>
+                                <button onClick={showAddProduct} type="button" className="focus:outline-none text-white bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:ring-sky-300 font-medium rounded-lg text-sm px-3 py-1 mb-2 dark:bg-sky-600 dark:hover:bg-sky-700 dark:focus:ring-sky-900">Add Product</button>
                             </div>
                             <Table
                                 columns={columns}
@@ -307,7 +333,16 @@ const Dashboard = () => {
                         </div>
                     </main>
                 </Skeleton>
-            </div> */}
+            </div>
+        )
+    }
+
+    return (
+        <Fragment>
+            {contextHolder}
+
+            {viewAddProduct ? <CreateProduct /> : <ListProduct />}
+
             <footer>
                 <Section>
                     <Container center>
