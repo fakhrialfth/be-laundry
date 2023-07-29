@@ -1,58 +1,78 @@
 import dynamic from 'next/dynamic';
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect, useContext } from 'react';
 import { Select, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Section } from 'components/ui/templates/Section';
 import { Container } from 'components/ui/templates/Container';
 import { Paragraph } from 'components/ui/templates/Paragraph';
 import Link from 'next/link';
+import axios from 'axios';
+import { AuthContext } from './_app';
 
 const Home = () => {
-
     const DynamicColumnChart: any = dynamic(() => import('../components/ui/BarChart'), { ssr: false });
+    
+    const { token, dispatch } = useContext(AuthContext)
+    const [report, setReport] = useState([])
+
+    interface Report {
+        created_at: string,
+        income: string,
+        total: number,
+    }
+
+    const date: string[] = report.map((e: Report) => e.created_at);
+    const income: string[] = report.map((e: Report) => e.income);
+    const total: number[] = report.map((e: Report) => e.total);
+
+    const topSell = [...report].sort((a: any, b: any) => {
+        return b.income - a.income;
+    });
+
+    useEffect(() => {
+        if (token != null) {
+            reportProduct()
+        }
+    }, []);
+
+    const reportProduct = () => {
+        axios.get('https://belaundry-api.sebaris.link/platform/product/report', {
+            headers: { token: `${token}` }
+        })
+            .then((res) => {
+                setReport(res.data)
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
 
     const selectChanege = (value: string) => {
         console.log(`selected ${value}`);
     };
 
     interface DataType {
-        key: string;
-        name: string;
-        value: string;
+        created_at: string,
+        income: string,
+        total: number,
     }
 
     const columns: ColumnsType<DataType> = [
         {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text) => <a>{text}</a>,
+            title: 'Date',
+            dataIndex: 'created_at',
+            key: 'date',
         },
         {
             title: 'Value',
-            dataIndex: 'value',
-            key: 'value',
+            dataIndex: 'income',
+            key: 'income',
             align: 'right',
+            render: (text) => <a>{`$ ${text}`}</a>,
         },
     ];
 
-    const data: DataType[] = [
-        {
-            key: '1',
-            name: 'John Brown',
-            value: '50',
-        },
-        {
-            key: '2',
-            name: 'Jim Green',
-            value: "42",
-        },
-        {
-            key: '3',
-            name: 'Joe Black',
-            value: '38',
-        },
-    ];
+    const data: DataType[] = topSell
 
     return (
         <Fragment>
@@ -60,33 +80,33 @@ const Home = () => {
                 <div className=' border-b-2 border-gray-200 pb-4 flex justify-between mb-4'>
                     <p className=' font-bold'>Product Sold</p>
                     <Select
-                        defaultValue="lucy"
+                        defaultValue="thisWeek"
                         style={{ width: 150, }}
                         onChange={selectChanege}
                         options={[
-                            { value: 'jack', label: 'Jack' },
-                            { value: 'lucy', label: 'Lucy' },
-                            { value: 'Yiminghe', label: 'yiminghe' },
-                            { value: 'disabled', label: 'Disabled', disabled: true },
+                            { value: 'thisWeek', label: 'This week' },
+                            { value: 'lastWeek', label: 'Last week' },
+                            { value: 'thisMonth', label: 'This month' },
+                            { value: 'lastMonth', label: 'Last month' },
                         ]}
                     />
                 </div>
                 <div className='mt-4'>
-                    <DynamicColumnChart />
+                    <DynamicColumnChart date={date} total={total}/>
                 </div>
             </div>
             <div className="md:w-4/12 bg-white shadow-sm rounded-xl mt-9 px-6 py-5">
                 <div className=' border-b-2 border-gray-200 pb-4 flex justify-between mb-4'>
                     <p className=' font-bold'>Top selling product</p>
                     <Select
-                        defaultValue="lucy"
+                        defaultValue="thisWeek"
                         style={{ width: 150, }}
                         onChange={selectChanege}
                         options={[
-                            { value: 'jack', label: 'Jack' },
-                            { value: 'lucy', label: 'Lucy' },
-                            { value: 'Yiminghe', label: 'yiminghe' },
-                            { value: 'disabled', label: 'Disabled', disabled: true },
+                            { value: 'thisWeek', label: 'This week' },
+                            { value: 'lastWeek', label: 'Last week' },
+                            { value: 'thisMonth', label: 'This month' },
+                            { value: 'lastMonth', label: 'Last month' },
                         ]}
                     />
                 </div>

@@ -1,9 +1,8 @@
-import { Dispatch, Fragment, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, Fragment, SetStateAction, useEffect, useState, useContext } from 'react';
 import { useRouter } from 'next/router';
 import {
 	BsFilterLeft,
 	BsChevronDown,
-	BsFillGearFill,
 	BsPersonFill,
 	BsDoorOpenFill,
 	BsBell,
@@ -13,6 +12,8 @@ import {
 import { Menu, Popover, Transition } from '@headlessui/react';
 // import Astronauts from '../../public/astronauts.jpg'
 import Link from 'next/link';
+import axios from 'axios';
+import { AuthContext } from 'pages/_app';
 
 type Props = {
 	showNav: boolean;
@@ -21,14 +22,30 @@ type Props = {
 
 export const TopBar = ({ showNav, setShowNav }: Props) => {
 
+	const { token, dispatch } = useContext(AuthContext)
 	const [isActivePath, setIsActivePath] = useState("");
+	const [name, setName] = useState("");
 	const router = useRouter(); 
 	const { pathname } = router; 
 
 	useEffect(() => {
 		console.log("path", pathname);
 		setIsActivePath(pathname)
+		getUser()
 	}, [pathname]);
+
+	const getUser = () => {
+        axios.get('https://belaundry-api.sebaris.link/platform/user/info', {
+            headers: { token: `${token}` }
+        })
+            .then((res) => {
+				setName(res.data.response.name)
+				localStorage.setItem("userName", res.data.response.name)
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
 
 	return (
 		<section
@@ -110,7 +127,7 @@ export const TopBar = ({ showNav, setShowNav }: Props) => {
 						<Menu.Button
 							className={'inline-flex w-full justify-center items-center gap-1'}
 						>
-							<span className="hidden md:block font-medium text-gray-700 hover:text-sky-600">User</span>
+							<span className="hidden md:block font-medium text-gray-700 hover:text-sky-600">{name}</span>
 							<BsChevronDown className={'w-4 h-4 text-gray-700 hover:text-sky-600'} />
 						</Menu.Button>
 

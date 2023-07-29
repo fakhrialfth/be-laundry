@@ -1,9 +1,10 @@
 import { NextPage } from 'next'
 import { Input, notification } from 'antd';
 import Link from 'next/link'
-import { SyntheticEvent, useState } from 'react'
+import { SyntheticEvent, useContext, useState } from 'react'
 import { useRouter } from 'next/router'
-import axios from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
+import { AuthContext } from './_app';
 
 const Login: NextPage = () => {
 	const router = useRouter()
@@ -13,6 +14,8 @@ const Login: NextPage = () => {
 	const [errorMessage, setErrorMessage] = useState("");
 	const [api, contextHolder] = notification.useNotification();
 
+	const { dispatch } = useContext(AuthContext)
+
 	const openNotificationWithIcon = (description: string) => {
 		api['error']({
 			message: 'Error Authentication',
@@ -20,10 +23,10 @@ const Login: NextPage = () => {
 		});
 	};
 	const successNotification = (description: string) => {
-        api['success']({
-            message: description,
-        });
-    };
+		api['success']({
+			message: description,
+		});
+	};
 
 	const changeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		console.log(e.target.value);
@@ -34,16 +37,24 @@ const Login: NextPage = () => {
 		setPassword(e.target.value)
 	}
 
+	const payLoad = {
+		email: email,
+		password: password,
+	}
+	const requestHeaders = {
+		'Content-Type': 'application/json',
+	};
 
 	const login = (e: React.FormEvent) => {
 		e.preventDefault();
-		axios.post('https://belaundry-api.sebaris.link/platform/user/sign-in', {
-			email: email,
-			password: password,
-		})
+		axios.post('https://belaundry-api.sebaris.link/platform/user/sign-in', payLoad, { headers: requestHeaders })
 			.then((res) => {
 				console.log(res);
 				if (res.data.status === true) {
+					dispatch({
+						type: "LOGIN",
+						response: res.data.response,
+					})
 					setErrorMessage("")
 					successNotification(res.data.message)
 					router.push("/home");
