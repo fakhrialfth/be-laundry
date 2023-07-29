@@ -19,6 +19,11 @@ const Login: NextPage = () => {
 			description: description,
 		});
 	};
+	const successNotification = (description: string) => {
+        api['success']({
+            message: description,
+        });
+    };
 
 	const changeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
 		console.log(e.target.value);
@@ -40,6 +45,7 @@ const Login: NextPage = () => {
 				console.log(res);
 				if (res.data.status === true) {
 					setErrorMessage("")
+					successNotification(res.data.message)
 					router.push("/home");
 				} else {
 					setErrorMessage("Incorrect email or password.")
