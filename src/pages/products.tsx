@@ -602,7 +602,7 @@ const Dashboard = () => {
                                             <div className="md:h-48 border-dashed border-2 border-sky-400 rounded-md bg-white p-6 space-y-4 grid text-center items-center">
                                                 <label htmlFor="formFile" className="w-full h-full cursor-pointer flex flex-col items-center">
                                                     {image === "" && selectedProduct.image != "" ?
-                                                        <Image alt="image" src={selectedProduct.image} width={120} height={120}></Image>
+                                                        <img alt="image" src={selectedProduct.image} width={120} height={120}></img>
                                                         : image === "" && selectedProduct.image === "" ?
                                                         <Image alt="image" src={'/image.png'} width={120} height={120} />
                                                         : <Image alt="image" src={image} width={120} height={120}></Image>
