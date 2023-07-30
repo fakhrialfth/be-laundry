@@ -16,6 +16,8 @@ const Home = () => {
     const [report, setReport] = useState([])
     const [loading, setLoading] = useState(true)
 
+    console.log("token", token);
+    
     interface Report {
         created_at: string,
         income: string,

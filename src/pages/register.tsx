@@ -2,10 +2,11 @@ import { NextPage } from 'next'
 import { Checkbox, Input, notification } from 'antd';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import { useRouter } from 'next/router'
 import axios from 'axios'
 import { RequiredTooltip } from 'components/ui/RequiredTooltip';
+import { AuthContext } from './_app';
 
 const Register: NextPage = () => {
     const router = useRouter()
@@ -15,7 +16,10 @@ const Register: NextPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [chceked, setChecked] = useState(false)
+    const [loading, setLoading] = useState(false)
     const [api, contextHolder] = notification.useNotification();
+
+    const { dispatch } = useContext(AuthContext)
 
     const openNotificationWithIcon = (description: string) => {
         api['error']({
@@ -50,6 +54,15 @@ const Register: NextPage = () => {
         setChecked(e.target.checked)
     };
 
+    const payLoad = {
+        name: name,
+        phone: phone,
+        email: email,
+        password: password,
+    }
+    const requestHeaders = {
+        'Content-Type': 'application/json',
+    };
 
     const register = (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,17 +76,16 @@ const Register: NextPage = () => {
         else if (chceked === false) {
             requiredNotification('You must accept the Terms and Conditions!')
         } else {
-            axios.post('https://belaundry-api.sebaris.link/platform/user/sign-up', {
-                name: name,
-                phome: phone,
-                email: email,
-                password: password,
-            })
+            axios.post('https://belaundry-api.sebaris.link/platform/user/sign-up', payLoad, { headers: requestHeaders })
                 .then((res) => {
-                    console.log(res);
                     if (res.data.status === true) {
-                        router.push("/home");
+                        dispatch({
+                            type: "LOGIN",
+                            response: res.data.token,
+                        })
                         successNotification(res.data.message)
+					setLoading(true)
+                        router.push("/home");
                     } else {
                         openNotificationWithIcon(res.data.message)
                     }
@@ -123,7 +135,7 @@ const Register: NextPage = () => {
                                         <label className="font-light text-gray-500 dark:text-gray-300">I accept the <a className="font-medium text-primary-600 hover:underline dark:text-primary-500" href="#">Terms and Conditions</a></label>
                                     </div>
                                 </div>
-                                <button onClick={register} type="submit" className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Create an account</button>
+                                <button onClick={register} type="submit" className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">{loading ? "...loading" : "Create an account"}</button>
                                 <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                                     Already have an account? <a href="/" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</a>
                                 </p>

@@ -158,7 +158,7 @@ export const TopBar = ({ showNav, setShowNav }: Props) => {
 								</Menu.Item>
 								<Menu.Item>
 									<Link
-										href={'#'}
+										href={'/'}
 										className={
 											'flex hover:bg-sky-600 hover:text-white text-gray-700 rounded p-2 text-sm transition-colors ease-in-out duration-300 items-center gap-2'
 										}

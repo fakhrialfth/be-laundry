@@ -54,7 +54,10 @@ const App = ({ Component, pageProps }: AppProps) => {
 	useEffect(() => {
 		console.log("path", pathname);
 		setIsActivePath(pathname)
-	}, [pathname]);
+		if (pathname !== '/' && pathname!== '/register' && !state.token) {
+			router.push('/');
+		  }
+	}, [pathname, state.token]);
 
 	const isLoginOrRegister = isActivePath === "/" || isActivePath === "/register";
 

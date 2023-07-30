@@ -13,6 +13,7 @@ const Login: NextPage = () => {
 	const [password, setPassword] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const [api, contextHolder] = notification.useNotification();
+	const [loading, setLoading] = useState(false);
 
 	const { dispatch } = useContext(AuthContext)
 
@@ -49,7 +50,6 @@ const Login: NextPage = () => {
 		e.preventDefault();
 		axios.post('https://belaundry-api.sebaris.link/platform/user/sign-in', payLoad, { headers: requestHeaders })
 			.then((res) => {
-				console.log(res);
 				if (res.data.status === true) {
 					dispatch({
 						type: "LOGIN",
@@ -57,6 +57,7 @@ const Login: NextPage = () => {
 					})
 					setErrorMessage("")
 					successNotification(res.data.message)
+					setLoading(true)
 					router.push("/home");
 				} else {
 					setErrorMessage("Incorrect email or password.")
@@ -109,7 +110,7 @@ const Login: NextPage = () => {
 										: null
 									}
 								</div>
-								<button onClick={login} type="submit" className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
+								<button onClick={login} type="submit" className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">{loading ? "...loading" : "Sign in"}</button>
 								<p className="text-sm font-light text-gray-500 dark:text-gray-400">
 									Don’t have an account yet? <a href="/register" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up</a>
 								</p>
