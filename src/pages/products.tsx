@@ -1,6 +1,7 @@
 // import { isEqual, uniqWith } from 'lodash'
 import { Fragment, useEffect, useState, useContext } from "react";
-import { Table, Input, Modal, Row, Col, message, Skeleton } from "antd";
+import { Table, Input, message, Skeleton, Space, Tooltip, Radio, Button } from "antd";
+import type { RadioChangeEvent } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { Section } from "components/ui/templates/Section";
 import { Container } from "components/ui/templates/Container";
@@ -8,30 +9,34 @@ import { H1, H2, H3 } from "components/ui/templates/headings";
 import { Subtitle } from "components/ui/templates/Subtitle";
 import { Paragraph } from "components/ui/templates/Paragraph";
 import Link from 'next/link';
-import { AiOutlineClose } from "react-icons/ai";
+import { AiOutlineClose, AiFillEdit, AiFillDelete } from "react-icons/ai";
 import axios from "axios";
 import { AuthContext } from "./_app";
 
 const Dashboard = () => {
-    const [products, setProduct] = useState([])
-    const [viewAddProduct, setViewAddProduct] = useState(false)
+    const [products, setProduct] = useState([]);
+    const [category, setCategory] = useState([]);
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [productName, setProductName] = useState("");
-    const [brandName, setBrandName] = useState("");
-    const [price, setPrice] = useState("");
+    const [description, setDesciption] = useState("");
+    const [sku, setSku] = useState("");
     const [stock, setStock] = useState("");
-    const [categoryName, setCategoryName] = useState("");
+    const [idCategory, setIdCategory] = useState("1");
+    const [price, setPrice] = useState("");
+
+    const [radio, setRadio] = useState(1);
     const [messageApi, contextHolder] = message.useMessage();
     const [loading, setLoading] = useState(true)
     const { Search } = Input;
     const { TextArea } = Input;
-
     const { token, dispatch } = useContext(AuthContext)
+
+    const [viewAddProduct, setViewAddProduct] = useState(false);
 
     useEffect(() => {
         getProduct()
-    }, []);
+        getCategory()
+    }, [token]);
 
     const getProduct = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/product', {
@@ -46,6 +51,19 @@ const Dashboard = () => {
                 console.error(error);
             });
     };
+
+    const getCategory = () => {
+        axios.get('https://belaundry-api.sebaris.link/platform/product/categories', {
+            headers: { token: `${token}` }
+        })
+            .then((res) => {
+                console.log("category", res);
+                setCategory(res.data.response)
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
 
     // Set for data table
     interface DataType {
@@ -82,8 +100,14 @@ const Dashboard = () => {
     //   }));
     //   const category: any = uniqWith(categorys, isEqual)
 
+    const viewEditProduct = (record: any) => {
+
+    }
+    const deleteProduct = (record: any) => {
+
+    }
+
     const categoryById = (id: string) => {
-        console.log("lili", id);
         switch (id) {
             case "1":
                 return "Wash and Fold"
@@ -132,8 +156,24 @@ const Dashboard = () => {
         },
         {
             title: 'Action',
-            dataIndex: '',
             key: 'action',
+            align: 'center',
+            render: (record: any) => (
+                <Space size="middle">
+                    <Tooltip title="Edit product">
+                        <AiFillEdit
+                            className=" text-blue-500 cursor-pointer"
+                            onClick={() => viewEditProduct(record)}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Delete product">
+                        <AiFillDelete
+                            className=" text-red-500 cursor-pointer"
+                            onClick={() => deleteProduct(record)}
+                        />
+                    </Tooltip>
+                </Space>
+            ),
         },
     ];
     const data: DataType[] = products
@@ -149,40 +189,58 @@ const Dashboard = () => {
     // Search Function
     const onSearch = (value: string) => {
         console.log('value', value);
-        fetch(`https://dummyjson.com/products/search?q=${value}`)
-            .then(response => {
-                return response.json()
+        axios.get(`https://belaundry-api.sebaris.link/platform/product/${value}`, {
+            headers: { token: `${token}` }
+        })
+            .then((res) => {
+                console.log("length", res.data.response.length);
+                console.log("length", res.data.response.length);
+                let arr: any = []
+                if (res.data.response != null && res.data.response.length == undefined) {
+                    messageApi.open({
+                        type: 'success',
+                        content: 'Success get product',
+                    });
+                    arr.push(res.data.response)
+                    setProduct(arr)
+                } else if (res.data.response != null && res.data.response.length != undefined) {
+                    messageApi.open({
+                        type: 'success',
+                        content: 'Success get product',
+                    });
+                    setProduct(res.data.response)
+                } else {
+                    messageApi.open({
+                        type: 'error',
+                        content: 'Product not found',
+                    });
+                    setProduct([])
+                }
             })
-            .then(data => {
-                console.log(data);
-                setProduct(data.products)
-            })
+            .catch((error) => {
+                console.error(error);
+            });
     }
 
     // Add Function
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-    const handleOk = () => {
-        setIsModalOpen(false);
-    };
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
     const changeProduct = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setProductName(e.target.value);
     };
-    const changeBrand = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setBrandName(e.target.value);
+    const changeDescription = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setDesciption(e.target.value);
     };
-    const changePrice = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setPrice(e.target.value);
-    };
-    const changeCategory = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setCategoryName(e.target.value);
+    const changeSku = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setSku(e.target.value);
     };
     const changeStock = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setStock(e.target.value);
+    };
+    const changeIdCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+        console.log(e.currentTarget.value);
+        setIdCategory(e.currentTarget.value);
+    };
+    const changePrice = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setPrice(e.target.value);
     };
     const success = () => {
         messageApi.open({
@@ -193,33 +251,7 @@ const Dashboard = () => {
     const addProduct = () => {
         console.log("yuhuuuuu");
 
-        fetch('https://dummyjson.com/products/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: productName,
-                brand: brandName,
-                price: price,
-                stock: stock,
-                category: categoryName
-            })
-        })
-            .then(response => {
-                return response.json()
-            })
-            .then(res => {
-                success()
-                handleCancel();
-                setProductName("");
-                setBrandName("");
-                setPrice("");
-                setCategoryName("");
-                setStock("");
-                console.log(res);
-            })
-            .catch(err => {
-                console.log(err);
-            })
+
     }
 
     // Set view page
@@ -265,9 +297,16 @@ const Dashboard = () => {
                                     </div>
                                     <div>
                                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
-                                        <div className="flex items-start md:w-8/12">
-                                            <Input name="sku" id="sku" placeholder="sku" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required={true} />
-                                            <Input type="number" name="stock" id="stock" placeholder="stock" className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required={true} />
+                                        <div className="flex items-start md:w-12/12 mb-4">
+                                            {category.map((e: any) => {
+                                                return (
+                                                    <button value={e.id} onClick={changeIdCategory}
+                                                        className={idCategory == e.id ? "bg-sky-600 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm" :
+                                                            "bg-sky-400 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm"} >
+                                                        {e.name}
+                                                    </button>
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                     <button type="submit" className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Sign in</button>
@@ -315,7 +354,7 @@ const Dashboard = () => {
                         <div className=" flex justify-end px-4 mb-5">
                             <Search
                                 className="w-2/5"
-                                placeholder="search product"
+                                placeholder="find product by id"
                                 onSearch={onSearch}
                             />
                         </div>
