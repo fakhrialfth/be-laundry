@@ -32,12 +32,6 @@ const Home = () => {
         return b.income - a.income;
     });
 
-    useEffect(() => {
-        if (token != null) {
-            reportProduct()
-        }
-    }, [token]);
-
     const reportProduct = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/product/report', {
             headers: { token: `${token}` }
@@ -50,6 +44,12 @@ const Home = () => {
                 console.error(error);
             });
     };
+
+    useEffect(() => {
+        if (token != null) {
+            reportProduct()
+        }
+    }, [token]);
 
     const selectChanege = (value: string) => {
         console.log(`selected ${value}`);

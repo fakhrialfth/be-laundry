@@ -56,7 +56,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 		if (pathname !== '/' && pathname!== '/register' && !state?.token) {
 			router?.push('/');
 		  }
-	}, [pathname, state?.token]);
+	}, [pathname, state?.token, router]);
 
 	const isLoginOrRegister = isActivePath === "/" || isActivePath === "/register";
 

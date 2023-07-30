@@ -28,11 +28,6 @@ export const TopBar = ({ showNav, setShowNav }: Props) => {
 	const router = useRouter(); 
 	const { pathname } = router; 
 
-	useEffect(() => {
-		console.log("path", pathname);
-		setIsActivePath(pathname)
-		getUser()
-	}, [token, pathname]);
 
 	const getUser = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/user/info', {
@@ -46,6 +41,12 @@ export const TopBar = ({ showNav, setShowNav }: Props) => {
                 console.error(error);
             });
     };
+
+	useEffect(() => {
+		console.log("path", pathname);
+		setIsActivePath(pathname)
+		getUser()
+	}, [token, pathname, getUser]);
 
 	return (
 		<section

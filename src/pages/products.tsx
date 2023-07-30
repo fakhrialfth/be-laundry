@@ -48,10 +48,7 @@ const Dashboard = () => {
     const [viewAddProduct, setViewAddProduct] = useState(false);
     const [viewEdit, setViewEdit] = useState(false)
 
-    useEffect(() => {
-        getProduct()
-        getCategory()
-    }, [token]);
+    
     const getProduct = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/product', {
             headers: { token: `${token}` }
@@ -77,6 +74,10 @@ const Dashboard = () => {
                 console.error(error);
             });
     }
+    useEffect(() => {
+        getProduct()
+        getCategory()
+    }, [token]);
 
     interface SelectedProduct {
         id: number | string;
@@ -240,8 +241,7 @@ const Dashboard = () => {
             headers: { token: `${token}` }
         })
             .then((res) => {
-                console.log("length", res.data.response.length);
-                console.log("length", res.data.response.length);
+                console.log("length", res);
                 let arr: any = []
                 if (res.data.response != null && res.data.response.length == undefined) {
                     messageApi.open({
@@ -483,9 +483,9 @@ const Dashboard = () => {
                                         <div>
                                             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
                                             <div className="flex items-start md:w-12/12 mb-4">
-                                                {category?.map((e: any) => {
+                                                {category?.map((e: any, i: number) => {
                                                     return (
-                                                        <button value={e.id} onClick={changeIdCategory}
+                                                        <button value={e.id} key={i} onClick={changeIdCategory}
                                                             className={idCategory == e.id ? "bg-sky-600 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm" :
                                                                 "bg-sky-400 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm"} >
                                                             {e.name}
@@ -572,9 +572,9 @@ const Dashboard = () => {
                                             <div>
                                                 <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
                                                 <div className="flex items-start md:w-12/12 mb-4">
-                                                    {category?.map((e: any) => {
+                                                    {category?.map((e: any, i: number) => {
                                                         return (
-                                                            <button value={e.id} onClick={changeIdCategory}
+                                                            <button value={e.id} key={i} onClick={changeIdCategory}
                                                                 className={selectedProduct.category_id == e.id ? "bg-sky-600 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm" :
                                                                     "bg-sky-400 border-none hover:text-white hover:bg-sky-600 text-white mr-2 px-2 py-1 rounded-md font-medium text-sm"} >
                                                                 {e.name}
@@ -602,10 +602,10 @@ const Dashboard = () => {
                                             <div className="md:h-48 border-dashed border-2 border-sky-400 rounded-md bg-white p-6 space-y-4 grid text-center items-center">
                                                 <label htmlFor="formFile" className="w-full h-full cursor-pointer flex flex-col items-center">
                                                     {image === "" && selectedProduct.image != "" ?
-                                                        <img src={selectedProduct.image} width={120} height={120}></img>
+                                                        <Image alt="image" src={selectedProduct.image} width={120} height={120}></Image>
                                                         : image === "" && selectedProduct.image === "" ?
-                                                        <Image src={'/image.png'} alt={'Ferox'} width={120} height={120} />
-                                                        : <img src={image} width={120} height={120}></img>
+                                                        <Image alt="image" src={'/image.png'} width={120} height={120} />
+                                                        : <Image alt="image" src={image} width={120} height={120}></Image>
                                                     }
                                                     <input
                                                         onChange={handleUploadChange}
