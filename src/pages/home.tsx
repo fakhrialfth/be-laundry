@@ -36,7 +36,7 @@ const Home = () => {
         if (token != null) {
             reportProduct()
         }
-    }, []);
+    }, [token]);
 
     const reportProduct = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/product/report', {

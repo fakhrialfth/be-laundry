@@ -32,15 +32,15 @@ export const TopBar = ({ showNav, setShowNav }: Props) => {
 		console.log("path", pathname);
 		setIsActivePath(pathname)
 		getUser()
-	}, [pathname]);
+	}, [token, pathname]);
 
 	const getUser = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/user/info', {
             headers: { token: `${token}` }
         })
             .then((res) => {
-				setName(res.data.response.name)
-				localStorage.setItem("userName", res.data.response.name)
+				setName(res?.data?.response?.name)
+				localStorage.setItem("userName", res?.data?.response?.name)
             })
             .catch((error) => {
                 console.error(error);

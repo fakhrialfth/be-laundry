@@ -25,14 +25,13 @@ type ActionType = {
 };
 // Buat reducer
 const reducer = (state: AuthContextType, action: ActionType) => {
-	console.log("action", action);
-	switch (action.type) {
+	switch (action?.type) {
 		case "LOGIN":
-			localStorage.setItem("token", action.response)
+			localStorage.setItem("token", action?.response)
 			return {
 				...state,
 				isAuthenticated: true,
-				token: action.response
+				token: action?.response
 			}
 		case "LOGOUT":
 			localStorage.clear()
@@ -54,10 +53,10 @@ const App = ({ Component, pageProps }: AppProps) => {
 	useEffect(() => {
 		console.log("path", pathname);
 		setIsActivePath(pathname)
-		if (pathname !== '/' && pathname!== '/register' && !state.token) {
-			router.push('/');
+		if (pathname !== '/' && pathname!== '/register' && !state?.token) {
+			router?.push('/');
 		  }
-	}, [pathname, state.token]);
+	}, [pathname, state?.token]);
 
 	const isLoginOrRegister = isActivePath === "/" || isActivePath === "/register";
 
