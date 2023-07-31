@@ -1,7 +1,7 @@
 // import { isEqual, uniqWith } from 'lodash'
 import { Fragment, useEffect, useState, useContext } from "react";
 import { Table, Input, message, Skeleton, Space, Tooltip, Radio, Button, Modal } from "antd";
-import type { RadioChangeEvent } from 'antd';
+import { isEqual, uniqWith } from 'lodash'
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import { Section } from "components/ui/templates/Section";
 import { Container } from "components/ui/templates/Container";
@@ -48,7 +48,7 @@ const Dashboard = () => {
     const [viewAddProduct, setViewAddProduct] = useState(false);
     const [viewEdit, setViewEdit] = useState(false)
 
-    
+
     const getProduct = () => {
         axios.get('https://belaundry-api.sebaris.link/platform/product', {
             headers: { token: `${token}` }
@@ -122,40 +122,7 @@ const Dashboard = () => {
     }
 
     // Set for data table
-    interface DataType {
-        name: string;
-        sku: string;
-        price: number;
-        stock: number;
-        category: string;
-    }
-    interface Item {
-        title?: string,
-        brand?: string,
-        category?: string,
-    }
-
-    //   const titles = products.map((item: Item) => ({
-    //     text: item.title,
-    //     value: item.title,
-    //   }));
-    //   const title: any = uniqWith(titles, isEqual)
-    //   console.log('jj', title);
-
-
-    //   const brands = products.map((item: Item) => ({
-    //     text: item.brand,
-    //     value: item.brand,
-    //   }));
-    //   const brand: any = uniqWith(brands, isEqual)
-
-    //   const categorys = products.map((item: Item) => ({
-    //     text: item.category,
-    //     value: item.category,
-    //   }));
-    //   const category: any = uniqWith(categorys, isEqual)
-
-    const categoryById = (id: string) => {
+    const categoryById = (id: any) => {
         switch (id) {
             case "1":
                 return "Wash and Fold"
@@ -169,20 +136,53 @@ const Dashboard = () => {
                 return "Other"
         }
     }
+
+    interface DataType {
+        name: string;
+        sku: string;
+        price: number;
+        stock: number;
+        category: string;
+    }
+    interface Item {
+        name?: string,
+        sku?: string,
+        category_id?: string | number,
+    }
+
+    const names = products.map((item: Item) => ({
+        text: item.name,
+        value: item.name,
+    }));
+    const nameFilter: any = uniqWith(names, isEqual)
+
+    const skus = products.map((item: Item) => ({
+        text: item.sku,
+        value: item.sku,
+    }));
+    const skuFilter: any = uniqWith(skus, isEqual)
+
+    const categorys = products.map((item: Item) => ({
+        text: categoryById(item.category_id),
+        value: item.category_id,
+    }));
+    const categoryFilter: any = uniqWith(categorys, isEqual)
+    console.log("yuhu", categoryFilter);
+
     const columns: ColumnsType<DataType> = [
         {
             title: 'Product Name',
             dataIndex: 'name',
             key: 'name',
-            //   filters: title,
-            onFilter: (value: string | number | boolean, record: any) => record.title.indexOf(value) === 0,
+              filters: nameFilter,
+            onFilter: (value: string | number | boolean, record: any) => record.name.indexOf(value) === 0,
         },
         {
             title: 'Sku',
             dataIndex: 'sku',
-            key: 'brand',
-            //   filters: brand,
-            onFilter: (value: string | number | boolean, record: any) => record.brand.indexOf(value) === 0,
+            key: 'sku',
+              filters: skuFilter,
+            onFilter: (value: string | number | boolean, record: any) => record.sku.indexOf(value) === 0,
         },
         {
             title: 'Price',
@@ -198,9 +198,9 @@ const Dashboard = () => {
             title: 'Category',
             dataIndex: 'category_id',
             key: 'category',
-            //   filters: category,
+              filters: categoryFilter,
             render: (text) => <a>{categoryById(text)}</a>,
-            // onFilter: (value: string | number | boolean, record: any) => record.category.indexOf(value) === 0,
+            onFilter: (value: string | number | boolean, record: any) => record.category_id.indexOf(value) === 0,
         },
         {
             title: 'Action',
@@ -604,8 +604,8 @@ const Dashboard = () => {
                                                     {image === "" && selectedProduct.image != "" ?
                                                         <img alt="image" src={selectedProduct.image} width={120} height={120}></img>
                                                         : image === "" && selectedProduct.image === "" ?
-                                                        <Image alt="image" src={'/image.png'} width={120} height={120} />
-                                                        : <Image alt="image" src={image} width={120} height={120}></Image>
+                                                            <Image alt="image" src={'/image.png'} width={120} height={120} />
+                                                            : <Image alt="image" src={image} width={120} height={120}></Image>
                                                     }
                                                     <input
                                                         onChange={handleUploadChange}
